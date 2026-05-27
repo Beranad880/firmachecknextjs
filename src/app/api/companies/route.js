@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server';
 import { turso } from '@/lib/turso';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
+export async function DELETE() {
+  try {
+    await turso.execute({ sql: 'DELETE FROM companies', args: [] });
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (error) {
+    console.error('Clear history error:', error);
+    return NextResponse.json({ error: 'Nepodařilo se vymazat historii.' }, { status: 500 });
+  }
+}
+
 export async function GET(request) {
   try {
     try {

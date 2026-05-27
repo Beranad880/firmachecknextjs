@@ -89,6 +89,19 @@ export default function Home() {
     }
   };
 
+  const clearHistory = async () => {
+    if (!window.confirm('Opravdu chcete vymazat celou historii?')) return;
+    try {
+      const res = await fetch('/api/companies', { method: 'DELETE' });
+      if (res.ok) {
+        setHistory([]);
+        setCompany(null);
+      }
+    } catch (err) {
+      console.error('Clear history failed:', err);
+    }
+  };
+
   const exportToCsv = () => {
     if (history.length === 0) return;
 
@@ -171,6 +184,7 @@ export default function Home() {
               activeIco={company?.ico}
               onSelect={handleSearch}
               onExport={exportToCsv}
+              onClear={clearHistory}
             />
           </div>
         </div>
