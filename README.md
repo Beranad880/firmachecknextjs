@@ -44,20 +44,28 @@ Webová aplikace pro okamžité ověřování českých ekonomických subjektů 
 src/
 ├── app/
 │   ├── _components/
-│   │   ├── SearchForm.js      # Formulář, validace, rychlé tipy, chybová hláška
+│   │   ├── SearchForm.js      # Formulář pro IČO, rychlé tipy, chybová hláška
 │   │   ├── CompanyResult.js   # Detail firmy + Google Maps embed
 │   │   └── HistoryList.js     # Seznam cached firem, skeleton loader, CSV export
 │   ├── api/
 │   │   ├── company/[ico]/
 │   │   │   └── route.js       # Hlavní endpoint: cache check → ARES fetch → uložení
 │   │   └── companies/
-│   │       └── route.js       # GET /api/companies — seznam posledních vyhledání
+│   │       └── route.js       # GET/DELETE historie vyhledávání
+│   ├── icon.svg               # AI logo použité jako favicon přes Next.js metadata convention
 │   ├── layout.js
 │   ├── page.js                # Orchestrátor stavu, hlavní stránka
 │   └── globals.css
 ├── lib/
+│   ├── companies.js           # Pool doporučených firem + náhodný výběr
+│   ├── validation.js          # Sdílená validace IČO pro frontend i API
 │   ├── turso.js               # Turso klient (singleton)
 │   └── rate-limit.js          # Rate limiting přes Turso DB
+public/
+├── ai-firmacheck-logo.svg     # AI logo zobrazené v hlavičce aplikace
+└── ai-firmacheck-visual.svg   # AI vizuál použitý v README
+tests/
+└── validation.test.js         # Vitest unit testy validace IČO
 db/
 └── schema.sql                 # Definice tabulek companies + rate_limits
 scripts/
@@ -144,6 +152,8 @@ npm run start
 
 Projekt používá Vitest pro malé unit testy aplikační logiky.
 
+Testovací soubory jsou ve složce `tests/`.
+
 ```bash
 npm run test:run
 ```
@@ -157,6 +167,13 @@ npm run test
 Spustí testy ve watch režimu při vývoji.
 
 Aktuálně testy pokrývají validaci IČO v `src/lib/validation.js`, kterou používá frontend i API endpoint `/api/company/:ico`.
+
+Před odevzdáním byly ověřené také:
+
+```bash
+npm run lint
+npm run build
+```
 
 ---
 
@@ -185,11 +202,23 @@ Vyhledá firmu podle IČO. Nejprve zkontroluje cache, při MISS zavolá ARES API
 
 ---
 
-### `GET /api/companies?limit=50`
+### `GET /api/companies?limit=50&page=1`
 
 Vrátí seznam posledně vyhledaných firem seřazených od nejnovějšího.
 
+**Parametry:**
+- `limit` — počet záznamů, rozsah 1-100
+- `page` — volitelná stránka pro offsetové stránkování; při použití vrací objekt `{ companies, total }`
+
 **Rate limit:** 60 požadavků / 60 sekund (per IP)
+
+---
+
+### `DELETE /api/companies`
+
+Vymaže uloženou historii vyhledávání.
+
+Používá se z tlačítka **Vymazat** v pravém panelu aplikace.
 
 ---
 
