@@ -195,3 +195,13 @@ Endpoint je skryt (vrátí 404), pokud `ADMIN_API_TOKEN` není nastaven.
 ## Zdroj dat
 
 Aplikace využívá veřejné [REST API ARES](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/) (Administrativní registr ekonomických subjektů) provozované Ministerstvem financí České republiky. Data jsou veřejně přístupná bez nutnosti registrace nebo API klíče.
+
+---
+
+## Nástroje použité při vývoji
+
+Projekt byl vytvořen s pomocí AI nástrojů:
+
+- [Claude Code](https://claude.ai/code) — Anthropic CLI pro AI-asistované programování přímo v terminálu
+- [OpenAI Codex](https://openai.com/codex) — AI model pro generování a doplňování kódu
+- [Antigravity](https://antigravity.dev) — AI vývojový asistent
