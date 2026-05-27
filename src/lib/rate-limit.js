@@ -1,20 +1,49 @@
-const buckets = new Map();
+import { turso } from './turso';
 
-export function checkRateLimit(key, { limit = 30, windowMs = 60_000 } = {}) {
+let tableReady = false;
+
+async function ensureTable() {
+  if (tableReady) return;
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS rate_limits (
+      key      TEXT    NOT NULL PRIMARY KEY,
+      count    INTEGER NOT NULL DEFAULT 1,
+      reset_at INTEGER NOT NULL
+    )
+  `);
+  tableReady = true;
+}
+
+export async function checkRateLimit(key, { limit = 30, windowMs = 60_000 } = {}) {
+  await ensureTable();
+
   const now = Date.now();
-  const bucket = buckets.get(key);
+  const newResetAt = now + windowMs;
 
-  if (!bucket || bucket.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: limit - 1, resetAt: now + windowMs };
+  if (Math.random() < 0.01) {
+    turso.execute({ sql: 'DELETE FROM rate_limits WHERE reset_at < ?', args: [now] }).catch(() => {});
   }
 
-  if (bucket.count >= limit) {
-    return { allowed: false, remaining: 0, resetAt: bucket.resetAt };
-  }
+  const result = await turso.execute({
+    sql: `
+      INSERT INTO rate_limits (key, count, reset_at)
+      VALUES (?, 1, ?)
+      ON CONFLICT(key) DO UPDATE SET
+        count = CASE WHEN reset_at <= ? THEN 1 ELSE count + 1 END,
+        reset_at = CASE WHEN reset_at <= ? THEN ? ELSE reset_at END
+      RETURNING count, reset_at
+    `,
+    args: [key, newResetAt, now, now, newResetAt],
+  });
 
-  bucket.count += 1;
-  return { allowed: true, remaining: limit - bucket.count, resetAt: bucket.resetAt };
+  const count = Number(result.rows[0].count);
+  const resetAt = Number(result.rows[0].reset_at);
+
+  return {
+    allowed: count <= limit,
+    remaining: Math.max(0, limit - count),
+    resetAt,
+  };
 }
 
 export function getClientIp(request) {
@@ -22,6 +51,5 @@ export function getClientIp(request) {
   if (forwardedFor) {
     return forwardedFor.split(',')[0].trim();
   }
-
   return request.headers.get('x-real-ip') || 'unknown';
 }

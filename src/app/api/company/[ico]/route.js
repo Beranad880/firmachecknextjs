@@ -2,28 +2,30 @@ import { NextResponse } from 'next/server';
 import { turso } from '@/lib/turso';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
-const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS) || 30 * 24 * 60 * 60 * 1000;
 const ARES_TIMEOUT_MS = 8_000;
 
 export async function GET(request, { params }) {
   try {
-    const rateLimit = checkRateLimit(getClientIp(request), { limit: 30, windowMs: 60_000 });
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: 'Příliš mnoho požadavků. Zkuste to prosím za chvíli.' },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(Math.ceil((rateLimit.resetAt - Date.now()) / 1000)),
-          },
-        }
-      );
+    try {
+      const rateLimit = await checkRateLimit(getClientIp(request), { limit: 30, windowMs: 60_000 });
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { error: 'Příliš mnoho požadavků. Zkuste to prosím za chvíli.' },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(Math.ceil((rateLimit.resetAt - Date.now()) / 1000)),
+            },
+          }
+        );
+      }
+    } catch (rateLimitError) {
+      console.error('Rate limit check failed:', rateLimitError);
     }
 
-    // In Next.js 15/16, params is a Promise that needs to be awaited
     const { ico } = await params;
 
-    // 1. Validation: IČO must be exactly 8 digits
     if (!ico || !/^\d{8}$/.test(ico)) {
       return NextResponse.json(
         { error: 'Neplatný formát IČO. IČO musí obsahovat přesně 8 číslic.' },
@@ -31,7 +33,6 @@ export async function GET(request, { params }) {
       );
     }
 
-    // 2. Query Turso DB (Cache Check)
     const dbResult = await turso.execute({
       sql: 'SELECT ico, name, address, created_at FROM companies WHERE ico = ?',
       args: [ico],
@@ -53,18 +54,14 @@ export async function GET(request, { params }) {
           },
           {
             status: 200,
-            headers: {
-              'X-Cache': 'HIT',
-              'Content-Type': 'application/json',
-            },
+            headers: { 'X-Cache': 'HIT', 'Content-Type': 'application/json' },
           }
         );
       }
     }
 
-    // 3. Fetch from ARES API if not in DB Cache
     const aresUrl = `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/${ico}`;
-    
+
     let response;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), ARES_TIMEOUT_MS);
@@ -73,9 +70,9 @@ export async function GET(request, { params }) {
       response = await fetch(aresUrl, {
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 FirmaCheck/1.0',
+          'User-Agent': 'FirmaCheck/1.0 (Next.js; +https://github.com)',
         },
-        cache: 'no-store', // Disable Next.js implicit fetch caching
+        cache: 'no-store',
         signal: controller.signal,
       });
     } catch (fetchErr) {
@@ -92,18 +89,16 @@ export async function GET(request, { params }) {
       clearTimeout(timeout);
     }
 
-    // Check if the response content type is JSON
     const contentType = response.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
       const text = await response.text();
       console.error('Non-JSON response from ARES:', text.substring(0, 500));
       return NextResponse.json(
-        { error: 'Registr ARES vrátil neplatnou odpověď (HTML místo JSON). Služba může být dočasně nedostupná nebo blokuje požadavky.' },
+        { error: 'Registr ARES vrátil neplatnou odpověď. Služba může být dočasně nedostupná.' },
         { status: 502 }
       );
     }
 
-    // ARES returns 404 when subject does not exist
     if (response.status === 404) {
       return NextResponse.json(
         { error: `Firma s IČO ${ico} nebyla v registru ARES nalezena.` },
@@ -129,7 +124,6 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Secondary check of body for error or non-existence indicators
     if (
       aresData.kod === 'NEEXISTUJE' ||
       aresData.kod === 'NEPLATNY' ||
@@ -142,11 +136,9 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Extract relevant data
     const name = aresData.obchodniJmeno.trim();
     const address = aresData.sidlo?.textovaAdresa?.trim() || 'Adresa neuvedena';
 
-    // 4. Save to Turso DB Cache
     await turso.execute({
       sql: `
         INSERT INTO companies (ico, name, address, created_at)
@@ -159,7 +151,6 @@ export async function GET(request, { params }) {
       args: [ico, name, address],
     });
 
-    // 5. Return fresh data
     return NextResponse.json(
       {
         ico,
@@ -170,10 +161,7 @@ export async function GET(request, { params }) {
       },
       {
         status: 200,
-        headers: {
-          'X-Cache': 'MISS',
-          'Content-Type': 'application/json',
-        },
+        headers: { 'X-Cache': 'MISS', 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {

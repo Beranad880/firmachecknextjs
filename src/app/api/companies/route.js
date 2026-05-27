@@ -1,8 +1,26 @@
 import { NextResponse } from 'next/server';
 import { turso } from '@/lib/turso';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request) {
   try {
+    try {
+      const rateLimit = await checkRateLimit(getClientIp(request), { limit: 60, windowMs: 60_000 });
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { error: 'Příliš mnoho požadavků. Zkuste to prosím za chvíli.' },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(Math.ceil((rateLimit.resetAt - Date.now()) / 1000)),
+            },
+          }
+        );
+      }
+    } catch (rateLimitError) {
+      console.error('Rate limit check failed:', rateLimitError);
+    }
+
     const { searchParams } = new URL(request.url);
     const requestedLimit = Number.parseInt(searchParams.get('limit') || '50', 10);
     const limit = Number.isFinite(requestedLimit)
@@ -21,7 +39,6 @@ export async function GET(request) {
       created_at: row.created_at,
     }));
 
-    // Disable caching on client-side fetch to ensure history is always fresh
     return NextResponse.json(companies, {
       status: 200,
       headers: {
