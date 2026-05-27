@@ -159,7 +159,7 @@ Vyhledá firmu podle IČO. Nejprve zkontroluje cache, při MISS zavolá ARES API
 
 **Hlavičky:** `X-Cache: HIT | MISS`
 
-**Rate limit:** 30 požadavků / 60 sekund (per IP)
+**Rate limit:** 100 požadavků / 60 sekund (per IP)
 
 ---
 
@@ -205,3 +205,30 @@ Projekt byl vytvořen s pomocí AI nástrojů:
 - [Claude Code](https://claude.ai/code) — Anthropic CLI pro AI-asistované programování přímo v terminálu
 - [OpenAI Codex](https://openai.com/codex) — AI model pro generování a doplňování kódu
 - [Antigravity](https://antigravity.dev) — AI vývojový asistent
+
+---
+
+## AI-asistovaný vývoj — použité prompty
+
+Ukázka promptů, které byly použity při vývoji tohoto projektu s nástroji Claude Code, Codex a Antigravity:
+
+**Analýza a code review**
+> *„Analyzuj celý projekt, projdi všechny soubory a navrhni konkrétní vylepšení — zaměř se na architekturu, bezpečnost, výkon a kvalitu kódu."*
+
+**Refaktoring architektury**
+> *„Rozděl monolitický page.js na samostatné React komponenty. Každá komponenta by měla mít jasnou zodpovědnost, přijímat props a být znovupoužitelná."*
+
+**Bezpečnost**
+> *„Přidej do projektu bezpečnostní HTTP hlavičky — Content Security Policy, X-Frame-Options a další OWASP doporučení. Nakonfiguruj CSP tak, aby fungoval Google Maps iframe."*
+
+**Rate limiting**
+> *„Přepiš in-memory rate limiter na perzistentní řešení přes Turso DB, aby fungoval správně v serverless prostředí kde každý request může dostat novou instanci. Implementuj atomický UPSERT s RETURNING clause."*
+
+**Funkce náhodných doporučení**
+> *„Navrhni algoritmus, který bude uživatelům náhodně doporučovat velké české firmy jako rychlé tipy. Vytvoř pool firem z různých odvětví — technologie, bankovnictví, retail, logistika, média — a při každém načtení stránky vyber tři náhodné pomocí Fisher-Yates shuffle."*
+
+**Oprava hydration chyby**
+> *„Aplikace hází React hydration mismatch chybu kvůli Math.random() v useState initializeru. Navrhni fix, který zachová náhodnost na klientu a zároveň zajistí shodu server/klient renderu."*
+
+**Dokumentace**
+> *„Napiš profesionální README.md pro tento projekt. Zahrň přehled funkcí, tabulku technologií, diagram architektury s logikou cache, návod na lokální spuštění a dokumentaci všech API endpointů."*
