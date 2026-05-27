@@ -261,9 +261,6 @@ Ukázka promptů, které byly použity při vývoji tohoto projektu s nástroji 
 **Refaktoring architektury**
 > *„Rozděl monolitický page.js na samostatné React komponenty. Každá komponenta by měla mít jasnou zodpovědnost, přijímat props a být znovupoužitelná."*
 
-**Bezpečnost**
-> *„Přidej do projektu bezpečnostní HTTP hlavičky — Content Security Policy, X-Frame-Options a další OWASP doporučení. Nakonfiguruj CSP tak, aby fungoval Google Maps iframe."*
-
 **Rate limiting**
 > *„Přepiš in-memory rate limiter na perzistentní řešení přes Turso DB, aby fungoval správně v serverless prostředí kde každý request může dostat novou instanci. Implementuj atomický UPSERT s RETURNING clause."*
 
