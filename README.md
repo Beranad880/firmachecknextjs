@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FirmaCheck
 
-## Getting Started
+Next.js aplikace pro ověření českých firem podle IČO přes registr ARES. Výsledky se ukládají do Turso databáze jako cache, aby se opakované dotazy nevolaly znovu na ARES.
 
-First, run the development server:
+## Požadavky
+
+- Node.js kompatibilní s Next.js 16
+- Turso/libSQL databáze
+- npm
+
+## Konfigurace
+
+Vytvořte `.env` nebo nastavte proměnné v hostingu:
+
+```bash
+TURSO_CONNECTION_URL=libsql://...
+TURSO_AUTH_TOKEN=...
+ADMIN_API_TOKEN=nahodny-dlouhy-token
+```
+
+`ADMIN_API_TOKEN` je volitelný pro běh aplikace, ale bez něj endpoint `/api/dbcheck` vrací `404`.
+
+## Inicializace databáze
+
+```bash
+npm install
+npm run db:init
+```
+
+Schéma je v `db/schema.sql`.
+
+## Lokální vývoj
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikace běží na `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Kontrola kvality
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+- `GET /api/company/:ico` ověří IČO, použije cache a při miss/stale cache zavolá ARES.
+- `GET /api/companies?limit=50` vrací poslední uložené firmy, limit je omezen na rozsah 1 až 100.
+- `GET /api/dbcheck` je admin diagnostika. Vyžaduje hlavičku `x-admin-token` s hodnotou `ADMIN_API_TOKEN`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Poznámky k produkci
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Endpointy nejsou navázané na uživatelské účty, historie je globální cache.
+- Rate limit je jednoduchý in-memory limit vhodný pro základní ochranu. Pro serverless/multi-instance produkci použijte sdílený limit přes Redis, Upstash nebo podobnou službu.
+- Cache ARES odpovědí se obnovuje po 30 dnech.
