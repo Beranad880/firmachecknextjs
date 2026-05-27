@@ -20,7 +20,7 @@ Webová aplikace pro okamžité ověřování českých ekonomických subjektů 
 - **CSV export** — celá historie jedním kliknutím exportovatelná do souboru (UTF-8 BOM pro správné zobrazení českých znaků v MS Excel)
 - **Rate limiting** — ochrana API endpointů; stav uložen v Turso DB, funguje i v serverless prostředí
 - **Rychlé tipy** — předvolené zkratky pro rychlé otestování (Alza.cz, Seznam.cz, Škoda Auto)
-- **AI vizuální prvek** — vlastní SVG logo `public/ai-firmacheck-logo.svg` vygenerované AI asistentem a použité přímo v hlavičce aplikace
+- **AI vizuální prvek** — vlastní SVG logo `public/ai-firmacheck-logo.svg` vygenerované AI asistentem a použité v hlavičce aplikace i jako favicon (`src/app/icon.svg`)
 
 ---
 
