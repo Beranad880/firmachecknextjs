@@ -1,4 +1,4 @@
-const COMPANY_POOL = [
+export const COMPANY_POOL = [
   // E-commerce & tech
   { name: 'Alza.cz', ico: '27082440' },
   { name: 'Mall.cz', ico: '08553866' },

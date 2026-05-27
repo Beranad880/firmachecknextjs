@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import SearchForm from './_components/SearchForm';
 import CompanyResult from './_components/CompanyResult';
 import HistoryList from './_components/HistoryList';
-import { getRandomSuggestions } from '@/lib/companies';
+import { getRandomSuggestions, COMPANY_POOL } from '@/lib/companies';
 
 export default function Home() {
   const [icoInput, setIcoInput] = useState('');
@@ -87,6 +87,24 @@ export default function Home() {
     if (!/^\d{8}$/.test(targetIco)) {
       setError('IČO musí mít přesně 8 číslic.');
       return;
+    }
+
+    // Instantly replace the clicked quick tip button with another random one from the pool
+    if (customIco) {
+      setSuggestions(prev => {
+        const idx = prev.findIndex(sug => sug.ico === targetIco);
+        if (idx === -1) return prev; // not clicked from suggestions (e.g. clicked from history)
+
+        const existingIcos = new Set(prev.map(s => s.ico));
+        const candidates = COMPANY_POOL.filter(comp => !existingIcos.has(comp.ico));
+        
+        if (candidates.length === 0) return prev;
+
+        const newSug = candidates[Math.floor(Math.random() * candidates.length)];
+        const updated = [...prev];
+        updated[idx] = newSug;
+        return updated;
+      });
     }
 
     setLoading(true);
