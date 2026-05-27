@@ -291,6 +291,9 @@ export default function Home() {
         <p className="text-xs text-zinc-500">
           © {new Date().getFullYear()} FirmaCheck. Vyrobeno s využitím Next.js 16, Turso Database a ARES API.
         </p>
+        <p className="text-xs text-zinc-600 mt-2">
+          Vytvořil: Adam Pokorný
+        </p>
       </footer>
     </div>
   );
