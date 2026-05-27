@@ -1,0 +1,12 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">AI generated FirmaCheck logo</title>
+  <desc id="desc">Small logo with a verified company mark, database layer and map pin for FirmaCheck.</desc>
+  <rect width="96" height="96" rx="22" fill="#10B981"/>
+  <path d="M24 65V32.5C24 29.46 26.46 27 29.5 27H58L72 41V65C72 68.04 69.54 70.5 66.5 70.5H29.5C26.46 70.5 24 68.04 24 65Z" fill="#052E1B" fill-opacity="0.92"/>
+  <path d="M58 27V38.5C58 40.43 59.57 42 61.5 42H72" fill="#0F5132"/>
+  <path d="M35 50.5L43.5 59L61.5 40.5" stroke="#A7F3D0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="48" cy="75" rx="18" ry="5" fill="#052E1B" fill-opacity="0.28"/>
+  <circle cx="70" cy="24" r="10" fill="#ECFDF5"/>
+  <path d="M70 18.5C66.96 18.5 64.5 20.96 64.5 24C64.5 28.4 70 34 70 34C70 34 75.5 28.4 75.5 24C75.5 20.96 73.04 18.5 70 18.5Z" fill="#047857"/>
+  <circle cx="70" cy="24" r="2.4" fill="#ECFDF5"/>
+</svg>

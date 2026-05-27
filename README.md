@@ -2,6 +2,8 @@
 
 Webová aplikace pro okamžité ověřování českých ekonomických subjektů podle IČO. Data jsou načítána z oficiálního státního registru ARES a inteligentně cachována v Turso edge databázi — opakované dotazy jsou vráceny okamžitě bez zbytečného volání externího API.
 
+![AI generated FirmaCheck visual](public/ai-firmacheck-visual.svg)
+
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
@@ -18,6 +20,7 @@ Webová aplikace pro okamžité ověřování českých ekonomických subjektů 
 - **CSV export** — celá historie jedním kliknutím exportovatelná do souboru (UTF-8 BOM pro správné zobrazení českých znaků v MS Excel)
 - **Rate limiting** — ochrana API endpointů; stav uložen v Turso DB, funguje i v serverless prostředí
 - **Rychlé tipy** — předvolené zkratky pro rychlé otestování (Alza.cz, Seznam.cz, Škoda Auto)
+- **AI vizuální prvek** — vlastní SVG logo `public/ai-firmacheck-logo.svg` vygenerované AI asistentem a použité přímo v hlavičce aplikace
 
 ---
 
@@ -219,6 +222,9 @@ Projekt byl vytvořen s pomocí AI nástrojů:
 ## AI-asistovaný vývoj — použité prompty
 
 Ukázka promptů, které byly použity při vývoji tohoto projektu s nástroji Claude Code, Codex a Antigravity:
+
+**AI vizuální prvek**
+> *„Vygeneruj malé SVG logo pro webovou aplikaci FirmaCheck, které spojí motiv ověření firmy, databázové cache a mapového pinu. Logo použij v hlavičce aplikace a zmiň ho v README.“*
 
 **Analýza a code review**
 > *„Analyzuj celý projekt, projdi všechny soubory a navrhni konkrétní vylepšení — zaměř se na architekturu, bezpečnost, výkon a kvalitu kódu."*
