@@ -46,19 +46,36 @@ export default function SearchForm({ icoInput, onChange, onSubmit, loading, erro
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 pt-1">
-          <span className="text-xs text-zinc-400">Rychlé tipy:</span>
-          {suggestions.map((sug) => (
-            <button
-              key={sug.ico}
-              type="button"
-              onClick={(e) => onSubmit(e, sug.ico)}
-              disabled={loading}
-              className="text-xs bg-zinc-950 border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-900 px-3 py-1.5 rounded-md text-zinc-200 font-medium transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-            >
-              {sug.name} ({sug.ico})
-            </button>
-          ))}
+        <div className="space-y-2 pt-1 select-none">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-xs text-zinc-400 shrink-0 min-w-[70px]">Rychlé tipy:</span>
+            <div className="flex flex-wrap gap-2.5">
+              {suggestions.slice(0, 3).map((sug) => (
+                <button
+                  key={sug.ico}
+                  type="button"
+                  onClick={(e) => onSubmit(e, sug.ico)}
+                  disabled={loading}
+                  className="text-xs bg-zinc-950 border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-900 px-3 py-1.5 rounded-md text-zinc-200 font-medium transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:scale-95"
+                >
+                  {sug.name} ({sug.ico})
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2.5 sm:pl-[80px]">
+            {suggestions.slice(3, 5).map((sug) => (
+              <button
+                key={sug.ico}
+                type="button"
+                onClick={(e) => onSubmit(e, sug.ico)}
+                disabled={loading}
+                className="text-xs bg-zinc-950 border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-900 px-3 py-1.5 rounded-md text-zinc-200 font-medium transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:scale-95"
+              >
+                {sug.name} ({sug.ico})
+              </button>
+            ))}
+          </div>
         </div>
       </form>
 

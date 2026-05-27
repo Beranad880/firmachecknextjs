@@ -14,19 +14,42 @@ export default function Home() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [suggestions, setSuggestions] = useState([]);
+  
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const limit = 6;
 
   useEffect(() => {
-    setSuggestions(getRandomSuggestions(3));
+    setSuggestions([
+      { name: 'Madeta', ico: '63549391' },
+      { name: 'Decathlon', ico: '26590993' },
+      { name: 'Kentico', ico: '27647302' },
+      { name: 'Alza.cz', ico: '27082440' },
+      { name: 'Škoda Auto', ico: '00177041' }
+    ]);
   }, []);
   const searchRequestId = useRef(0);
 
-  const fetchHistory = async () => {
+  const fetchHistory = async (resetPage = false) => {
     try {
       setHistoryLoading(true);
-      const res = await fetch('/api/companies?limit=50');
+      const targetPage = resetPage ? 1 : page;
+      const res = await fetch(`/api/companies?limit=${limit}&page=${targetPage}`);
       if (res.ok) {
         const data = await res.json();
-        setHistory(data);
+        if (resetPage) {
+          setHistory(data.companies);
+          setPage(1);
+          setHasMore(data.companies.length < data.total);
+        } else {
+          setHistory(prev => {
+            const existingIcos = new Set(prev.map(c => c.ico));
+            const newItems = data.companies.filter(c => !existingIcos.has(c.ico));
+            const updated = [...prev, ...newItems];
+            setHasMore(updated.length < data.total);
+            return updated;
+          });
+        }
       }
     } catch (err) {
       console.error('Failed to fetch history:', err);
@@ -36,8 +59,31 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchHistory();
+    fetchHistory(true);
   }, []);
+
+  const handleLoadMore = async () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    try {
+      setHistoryLoading(true);
+      const res = await fetch(`/api/companies?limit=${limit}&page=${nextPage}`);
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(prev => {
+          const existingIcos = new Set(prev.map(c => c.ico));
+          const newItems = data.companies.filter(c => !existingIcos.has(c.ico));
+          const updated = [...prev, ...newItems];
+          setHasMore(updated.length < data.total);
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load more history:', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const handleSearch = async (e, customIco = null) => {
     if (e) e.preventDefault();
@@ -69,14 +115,17 @@ export default function Home() {
         setError(data.error || 'Něco se nepovedlo při vyhledávání subjekta.');
       } else {
         setCompany(data);
-        // Prepend to local state — avoids an extra DB round-trip
+        // Prepend to local state instantly
         setHistory(prev => {
           const filtered = prev.filter(item => item.ico !== data.ico);
           return [
             { ico: data.ico, name: data.name, address: data.address, created_at: data.created_at },
             ...filtered,
-          ].slice(0, 50);
+          ];
         });
+        setPage(1);
+        // Async refresh to sync correctly with DB total count
+        fetchHistory(true);
       }
     } catch (err) {
       if (requestId !== searchRequestId.current) return;
@@ -96,44 +145,61 @@ export default function Home() {
       if (res.ok) {
         setHistory([]);
         setCompany(null);
+        setHasMore(false);
+        setPage(1);
       }
     } catch (err) {
       console.error('Clear history failed:', err);
     }
   };
 
-  const exportToCsv = () => {
-    if (history.length === 0) return;
+  const exportToCsv = async () => {
+    try {
+      setLoading(true);
+      // Fetch full history without pagination limit to ensure complete CSV file
+      const res = await fetch('/api/companies?limit=1000');
+      if (!res.ok) throw new Error('Failed to fetch full history');
+      const data = await res.json();
+      
+      const fullHistory = Array.isArray(data) ? data : (data.companies || []);
 
-    const escapeCsv = (str) => {
-      if (str === null || str === undefined) return '';
-      const escaped = String(str).replace(/"/g, '""');
-      if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('\r') || escaped.includes('"')) {
-        return `"${escaped}"`;
-      }
-      return escaped;
-    };
+      if (fullHistory.length === 0) return;
 
-    const headers = ['IČO', 'Název firmy', 'Adresa sídla', 'Datum ověření (UTC)'];
-    const csvRows = [
-      headers.map(escapeCsv).join(','),
-      ...history.map(item =>
-        [item.ico, item.name, item.address, item.created_at].map(escapeCsv).join(',')
-      ),
-    ];
+      const escapeCsv = (str) => {
+        if (str === null || str === undefined) return '';
+        const escaped = String(str).replace(/"/g, '""');
+        if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('\r') || escaped.includes('"')) {
+          return `"${escaped}"`;
+        }
+        return escaped;
+      };
 
-    // UTF-8 BOM ensures MS Excel parses Czech characters correctly
-    const csvContent = '﻿' + csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `firmacheck_export_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 100);
+      const headers = ['IČO', 'Název firmy', 'Adresa sídla', 'Datum ověření (UTC)'];
+      const csvRows = [
+        headers.map(escapeCsv).join(','),
+        ...fullHistory.map(item =>
+          [item.ico, item.name, item.address, item.created_at].map(escapeCsv).join(',')
+        ),
+      ];
+
+      // UTF-8 BOM ensures MS Excel parses Czech characters correctly
+      const csvContent = '\uFEFF' + csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `firmacheck_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    } catch (err) {
+      console.error('CSV Export failed:', err);
+      setError('Nepodařilo se exportovat kompletní historii do CSV.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -185,6 +251,8 @@ export default function Home() {
               onSelect={handleSearch}
               onExport={exportToCsv}
               onClear={clearHistory}
+              hasMore={hasMore}
+              onLoadMore={handleLoadMore}
             />
           </div>
         </div>

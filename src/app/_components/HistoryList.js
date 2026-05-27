@@ -12,7 +12,26 @@ function SkeletonCard() {
   );
 }
 
-export default function HistoryList({ history, historyLoading, activeIco, onSelect, onExport, onClear }) {
+import { useState } from 'react';
+
+export default function HistoryList({
+  history,
+  historyLoading,
+  activeIco,
+  onSelect,
+  onExport,
+  onClear,
+  hasMore,
+  onLoadMore,
+}) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredHistory = history.filter((item) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return item.name.toLowerCase().includes(q) || item.ico.includes(q);
+  });
+
   return (
     <div className="glass-card p-6 sm:p-8 rounded-2xl flex flex-col min-h-[400px] lg:min-h-[500px]">
       <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
@@ -52,6 +71,32 @@ export default function HistoryList({ history, historyLoading, activeIco, onSele
         )}
       </div>
 
+      {/* Real-time search filter input */}
+      {history.length > 0 && (
+        <div className="mb-4 relative">
+          <input
+            type="text"
+            placeholder="Rychlé hledání v historii (IČO nebo název)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl py-2.5 pl-9 pr-14 text-xs text-slate-200 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium"
+          />
+          <div className="absolute left-3 top-3.5 text-zinc-500">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+            </svg>
+          </div>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-3 text-zinc-400 hover:text-white transition-all cursor-pointer text-[10px] font-semibold bg-zinc-800 px-1.5 py-0.5 rounded"
+            >
+              zrušit
+            </button>
+          )}
+        </div>
+      )}
+
       {historyLoading && history.length === 0 ? (
         <div className="flex-grow space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -70,38 +115,61 @@ export default function HistoryList({ history, historyLoading, activeIco, onSele
             Zatím jste nevyhledali žádnou firmu. Zadejte IČO pro první dotaz.
           </p>
         </div>
+      ) : filteredHistory.length === 0 ? (
+        <div className="flex-grow flex flex-col items-center justify-center text-center p-8 py-12 border border-dashed border-zinc-800 rounded-xl bg-zinc-950/20">
+          <p className="text-xs text-slate-500 font-medium">Žádné shody pro „{searchQuery}“</p>
+        </div>
       ) : (
-        <div className="flex-grow overflow-y-auto max-h-[350px] lg:max-h-[450px] space-y-3 pr-1">
-          {history.map((item) => (
-            <button
-              type="button"
-              key={item.ico}
-              onClick={(e) => onSelect(e, item.ico)}
-              aria-label={`Zobrazit detail firmy ${item.name}, IČO ${item.ico}`}
-              className={`group w-full border rounded-2xl p-4 cursor-pointer text-left transition-all duration-200 flex items-start justify-between gap-4 ${
-                activeIco === item.ico
-                  ? 'bg-emerald-950/30 border-emerald-500/50 shadow-md shadow-emerald-950/50'
-                  : 'bg-zinc-950/60 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-600'
-              }`}
-            >
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-1">
-                  {item.name}
-                </h4>
-                <p className="text-xs font-mono text-emerald-400/90 font-medium">{item.ico}</p>
-                <p className="text-xs text-slate-400 line-clamp-1">{item.address}</p>
-              </div>
+        <div className="flex-grow flex flex-col justify-between">
+          <div className="overflow-y-auto max-h-[320px] lg:max-h-[380px] space-y-3 pr-1">
+            {filteredHistory.map((item) => (
+              <button
+                type="button"
+                key={item.ico}
+                onClick={(e) => onSelect(e, item.ico)}
+                aria-label={`Zobrazit detail firmy ${item.name}, IČO ${item.ico}`}
+                className={`group w-full border rounded-2xl p-4 cursor-pointer text-left transition-all duration-200 flex items-start justify-between gap-4 ${
+                  activeIco === item.ico
+                    ? 'bg-emerald-950/30 border-emerald-500/50 shadow-md shadow-emerald-950/50'
+                    : 'bg-zinc-950/60 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-600'
+                }`}
+              >
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-1">
+                    {item.name}
+                  </h4>
+                  <p className="text-xs font-mono text-emerald-400/90 font-medium">{item.ico}</p>
+                  <p className="text-xs text-slate-400 line-clamp-1">{item.address}</p>
+                </div>
 
-              <div className="flex flex-col items-end justify-between h-full shrink-0">
-                <span className="text-[10px] font-mono text-slate-500">
-                  {new Date(item.created_at).toLocaleDateString('cs-CZ')}
-                </span>
-                <svg className="w-3.5 h-3.5 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all mt-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-              </div>
-            </button>
-          ))}
+                <div className="flex flex-col items-end justify-between h-full shrink-0">
+                  <span className="text-[10px] font-mono text-slate-500">
+                    {new Date(item.created_at).toLocaleDateString('cs-CZ')}
+                  </span>
+                  <svg className="w-3.5 h-3.5 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all mt-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Load More Pagination Button */}
+          {hasMore && !searchQuery.trim() && (
+            <div className="pt-4 border-t border-zinc-800 mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={historyLoading}
+                className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2 active:scale-95"
+              >
+                {historyLoading ? (
+                  <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" />
+                ) : null}
+                <span>Načíst další subjekty</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -37,6 +37,49 @@ export async function GET(request) {
       ? Math.min(Math.max(requestedLimit, 1), 100)
       : 50;
 
+    const pageParam = searchParams.get('page');
+
+    if (pageParam) {
+      const page = Number.parseInt(pageParam, 10);
+      if (!Number.isNaN(page) && page > 0) {
+        const offset = (page - 1) * limit;
+
+        const [rowsResult, countResult] = await Promise.all([
+          turso.execute({
+            sql: 'SELECT ico, name, address, created_at FROM companies ORDER BY created_at DESC LIMIT ? OFFSET ?',
+            args: [limit, offset],
+          }),
+          turso.execute({
+            sql: 'SELECT COUNT(*) as total FROM companies',
+            args: [],
+          }),
+        ]);
+
+        const companies = rowsResult.rows.map(row => ({
+          ico: row.ico,
+          name: row.name,
+          address: row.address,
+          created_at: row.created_at,
+        }));
+
+        const total = Number(countResult.rows[0]?.total ?? 0);
+
+        return NextResponse.json(
+          {
+            companies,
+            total,
+          },
+          {
+            status: 200,
+            headers: {
+              'Cache-Control': 'no-store, max-age=0',
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      }
+    }
+
     const result = await turso.execute({
       sql: 'SELECT ico, name, address, created_at FROM companies ORDER BY created_at DESC LIMIT ?',
       args: [limit],
