@@ -8,7 +8,7 @@ const ARES_TIMEOUT_MS = 8_000;
 export async function GET(request, { params }) {
   try {
     try {
-      const rateLimit = await checkRateLimit(getClientIp(request), { limit: 30, windowMs: 60_000 });
+      const rateLimit = await checkRateLimit(getClientIp(request), { limit: 100, windowMs: 60_000 });
       if (!rateLimit.allowed) {
         return NextResponse.json(
           { error: 'Příliš mnoho požadavků. Zkuste to prosím za chvíli.' },
