@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import SearchForm from './_components/SearchForm';
 import CompanyResult from './_components/CompanyResult';
 import HistoryList from './_components/HistoryList';
@@ -14,48 +14,46 @@ export default function Home() {
   const [company, setCompany] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState(() => COMPANY_POOL.slice(0, 4));
   
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const limit = 6;
 
   useEffect(() => {
-    setSuggestions(getRandomSuggestions(4));
+    const timeoutId = setTimeout(() => {
+      setSuggestions(getRandomSuggestions(4));
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, []);
+
   const searchRequestId = useRef(0);
 
-  const fetchHistory = async (resetPage = false) => {
+  const fetchHistory = useCallback(async () => {
     try {
       setHistoryLoading(true);
-      const targetPage = resetPage ? 1 : page;
-      const res = await fetch(`/api/companies?limit=${limit}&page=${targetPage}`);
+      const res = await fetch(`/api/companies?limit=${limit}&page=1`);
       if (res.ok) {
         const data = await res.json();
-        if (resetPage) {
-          setHistory(data.companies);
-          setPage(1);
-          setHasMore(data.companies.length < data.total);
-        } else {
-          setHistory(prev => {
-            const existingIcos = new Set(prev.map(c => c.ico));
-            const newItems = data.companies.filter(c => !existingIcos.has(c.ico));
-            const updated = [...prev, ...newItems];
-            setHasMore(updated.length < data.total);
-            return updated;
-          });
-        }
+        setHistory(data.companies);
+        setPage(1);
+        setHasMore(data.companies.length < data.total);
       }
     } catch (err) {
       console.error('Failed to fetch history:', err);
     } finally {
       setHistoryLoading(false);
     }
-  };
+  }, [limit]);
 
   useEffect(() => {
-    fetchHistory(true);
-  }, []);
+    const timeoutId = setTimeout(() => {
+      fetchHistory();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchHistory]);
 
   const handleLoadMore = async () => {
     const nextPage = page + 1;
@@ -140,7 +138,7 @@ export default function Home() {
         }
         setPage(1);
         // Async refresh to sync correctly with DB total count
-        fetchHistory(true);
+        fetchHistory();
       }
     } catch (err) {
       if (requestId !== searchRequestId.current) return;
@@ -171,12 +169,24 @@ export default function Home() {
   const exportToCsv = async () => {
     try {
       setLoading(true);
-      // Fetch full history without pagination limit to ensure complete CSV file
-      const res = await fetch('/api/companies?limit=1000');
-      if (!res.ok) throw new Error('Failed to fetch full history');
-      const data = await res.json();
-      
-      const fullHistory = Array.isArray(data) ? data : (data.companies || []);
+      const pageSize = 100;
+      let exportPage = 1;
+      let total = null;
+      const fullHistory = [];
+
+      while (total === null || fullHistory.length < total) {
+        const res = await fetch(`/api/companies?limit=${pageSize}&page=${exportPage}`);
+        if (!res.ok) throw new Error('Failed to fetch full history');
+
+        const data = await res.json();
+        const companies = data.companies || [];
+
+        fullHistory.push(...companies);
+        total = Number(data.total ?? fullHistory.length);
+
+        if (companies.length === 0) break;
+        exportPage += 1;
+      }
 
       if (fullHistory.length === 0) return;
 
