@@ -30,6 +30,7 @@ Webová aplikace pro okamžité ověřování českých ekonomických subjektů 
 | Styling | [Tailwind CSS 4](https://tailwindcss.com/) — utility-first, vlastní `@theme` konfigurace |
 | Databáze | [Turso](https://turso.tech/) — edge SQLite (libSQL), `@libsql/client` |
 | Zdroj dat | [ARES API](https://ares.gov.cz/) — veřejné REST API Ministerstva financí ČR |
+| Testy | [Vitest](https://vitest.dev/) — rychlé unit testy validační logiky |
 | Fonty | [Geist](https://vercel.com/font) — Geist Sans + Geist Mono (next/font/google) |
 
 ---
@@ -46,10 +47,8 @@ src/
 │   ├── api/
 │   │   ├── company/[ico]/
 │   │   │   └── route.js       # Hlavní endpoint: cache check → ARES fetch → uložení
-│   │   ├── companies/
-│   │   │   └── route.js       # GET /api/companies — seznam posledních vyhledání
-│   │   └── dbcheck/
-│   │       └── route.js       # Health check endpoint (vyžaduje admin token)
+│   │   └── companies/
+│   │       └── route.js       # GET /api/companies — seznam posledních vyhledání
 │   ├── layout.js
 │   ├── page.js                # Orchestrátor stavu, hlavní stránka
 │   └── globals.css
@@ -138,6 +137,26 @@ npm run start
 
 ---
 
+## Testy
+
+Projekt používá Vitest pro malé unit testy aplikační logiky.
+
+```bash
+npm run test:run
+```
+
+Spustí testy jednorázově, vhodné pro kontrolu před odevzdáním nebo CI.
+
+```bash
+npm run test
+```
+
+Spustí testy ve watch režimu při vývoji.
+
+Aktuálně testy pokrývají validaci IČO v `src/lib/validation.js`, kterou používá frontend i API endpoint `/api/company/:ico`.
+
+---
+
 ## API endpointy
 
 ### `GET /api/company/:ico`
@@ -171,23 +190,12 @@ Vrátí seznam posledně vyhledaných firem seřazených od nejnovějšího.
 
 ---
 
-### `GET /api/dbcheck`
-
-Health check endpoint pro monitoring. Vrátí stav připojení k DB a počet cachovaných subjektů.
-
-**Vyžaduje header:** `x-admin-token: <ADMIN_API_TOKEN>`
-
-Endpoint je skryt (vrátí 404), pokud `ADMIN_API_TOKEN` není nastaven.
-
----
-
 ## Proměnné prostředí
 
 | Proměnná | Povinná | Popis |
 |---|---|---|
 | `TURSO_CONNECTION_URL` | Ano | URL Turso databáze (`libsql://...` nebo `file:./local.db`) |
 | `TURSO_AUTH_TOKEN` | Pro vzdálenou DB | Autentizační token Turso |
-| `ADMIN_API_TOKEN` | Ne | Token pro `/api/dbcheck` health endpoint |
 | `CACHE_TTL_MS` | Ne | TTL cache v milisekundách (výchozí: 2 592 000 000 = 30 dní) |
 
 ---
@@ -233,9 +241,6 @@ Ukázka promptů, které byly použity při vývoji tohoto projektu s nástroji 
 **Dokumentace**
 > *„Napiš profesionální README.md pro tento projekt. Zahrň přehled funkcí, tabulku technologií, diagram architektury s logikou cache, návod na lokální spuštění a dokumentaci všech API endpointů."*
 
-**Diagnostika zdraví databáze (Health Check)**
-> *„Vytvoř API endpoint /api/dbcheck pro rychlou diagnostiku, který změří latenci dotazu k Turso DB, spočítá počet cachovaných subjektů a zkontroluje integritu SQL schématu.“*
-
 **Offsetové stránkování historie**
 > *„Uprav historii vyhledávání na stránkovanou s offsetovým dočítáním z databáze a přidej tlačítko 'Načíst další subjekty' na frontendu se zachováním plné zpětné kompatibility API.“*
 
@@ -247,4 +252,3 @@ Ukázka promptů, které byly použity při vývoji tohoto projektu s nástroji 
 
 **Externí GPS a mapová navigace**
 > *„Doplň pod interaktivní mapové okno rychlé odkazy pro spuštění navigace v plnohodnotné aplikaci Google Mapy a lokální službě Mapy.cz.“*
-

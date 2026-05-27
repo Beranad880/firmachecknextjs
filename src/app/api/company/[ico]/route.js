@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { turso } from '@/lib/turso';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { isValidIco } from '@/lib/validation';
 
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS) || 30 * 24 * 60 * 60 * 1000;
 const ARES_TIMEOUT_MS = 8_000;
@@ -26,7 +27,7 @@ export async function GET(request, { params }) {
 
     const { ico } = await params;
 
-    if (!ico || !/^\d{8}$/.test(ico)) {
+    if (!isValidIco(ico)) {
       return NextResponse.json(
         { error: 'Neplatný formát IČO. IČO musí obsahovat přesně 8 číslic.' },
         { status: 400 }

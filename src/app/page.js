@@ -5,6 +5,7 @@ import SearchForm from './_components/SearchForm';
 import CompanyResult from './_components/CompanyResult';
 import HistoryList from './_components/HistoryList';
 import { getRandomSuggestions, COMPANY_POOL } from '@/lib/companies';
+import { isValidIco } from '@/lib/validation';
 
 export default function Home() {
   const [icoInput, setIcoInput] = useState('');
@@ -84,7 +85,7 @@ export default function Home() {
 
     const targetIco = customIco || icoInput.trim();
 
-    if (!/^\d{8}$/.test(targetIco)) {
+    if (!isValidIco(targetIco)) {
       setError('IČO musí mít přesně 8 číslic.');
       return;
     }
