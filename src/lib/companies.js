@@ -1,25 +1,25 @@
 const COMPANY_POOL = [
   // E-commerce & tech
   { name: 'Alza.cz', ico: '27082440' },
-  { name: 'Mall.cz', ico: '26204335' },
-  { name: 'Rohlík.cz', ico: '03739095' },
-  { name: 'Heureka.cz', ico: '02387727' },
-  { name: 'Notino', ico: '29144798' },
+  { name: 'Mall.cz', ico: '08553866' },
+  { name: 'Rohlík.cz', ico: '03024130' },
+  { name: 'Heureka.cz', ico: '07822774' },
+  { name: 'Notino', ico: '27609057' },
   { name: 'CZC.cz', ico: '25612697' },
 
   // Internet & software
   { name: 'Seznam.cz', ico: '26168685' },
-  { name: 'Avast', ico: '02483561' },
-  { name: 'JetBrains', ico: '26493323' },
+  { name: 'Avast', ico: '02176475' },
+  { name: 'JetBrains', ico: '26502275' },
   { name: 'Kiwi.com', ico: '29352886' },
-  { name: 'Y Soft', ico: '26197669' },
-  { name: 'Bohemia Interactive', ico: '60751400' },
-  { name: 'Kentico', ico: '27647302' },
+  { name: 'Y Soft', ico: '26197740' },
+  { name: 'Bohemia Interactive', ico: '27218864' },
+  { name: 'Kentico', ico: '26930943' },
 
   // Automotive & průmysl
   { name: 'Škoda Auto', ico: '00177041' },
-  { name: 'Bosch ČR', ico: '00668245' },
-  { name: 'Continental Barum', ico: '00012858' },
+  { name: 'Bosch ČR', ico: '43872247' },
+  { name: 'Continental Barum', ico: '45788235' },
 
   // Energetika
   { name: 'ČEZ', ico: '45274649' },
@@ -36,7 +36,7 @@ const COMPANY_POOL = [
   // Pojišťovny
   { name: 'Česká pojišťovna', ico: '45272956' },
   { name: 'Kooperativa', ico: '47116617' },
-  { name: 'Allianz ČR', ico: '00001805' },
+  { name: 'Allianz ČR', ico: '47115971' },
 
   // Telekomunikace
   { name: 'T-Mobile', ico: '64949681' },
@@ -44,18 +44,18 @@ const COMPANY_POOL = [
   { name: 'O2', ico: '60193336' },
 
   // Retail & supermarkety
-  { name: 'Lidl ČR', ico: '26187031' },
-  { name: 'Kaufland', ico: '25317075' },
-  { name: 'Penny Market', ico: '64944359' },
+  { name: 'Lidl ČR', ico: '26178541' },
+  { name: 'Kaufland', ico: '25110161' },
+  { name: 'Penny Market', ico: '64945880' },
   { name: 'Tesco Stores ČR', ico: '45308314' },
-  { name: 'IKEA', ico: '49705494' },
-  { name: 'Decathlon', ico: '26590993' },
+  { name: 'IKEA', ico: '27081052' },
+  { name: 'Decathlon', ico: '28972350' },
 
   // Logistika & doprava
   { name: 'Česká pošta', ico: '47114983' },
-  { name: 'Zásilkovna', ico: '04539991' },
+  { name: 'Zásilkovna', ico: '28408306' },
   { name: 'PPL CZ', ico: '25194798' },
-  { name: 'DPD CZ', ico: '49622511' },
+  { name: 'DPD CZ', ico: '61329266' },
   { name: 'Czech Airlines', ico: '45795908' },
 
   // Média
@@ -66,9 +66,9 @@ const COMPANY_POOL = [
 
   // Potravinářství & nápoje
   { name: 'Plzeňský Prazdroj', ico: '45357366' },
-  { name: 'Budějovický Budvar', ico: '00514986' },
+  { name: 'Budějovický Budvar', ico: '00514152' },
   { name: 'Kofola', ico: '27767680' },
-  { name: 'Madeta', ico: '63549391' },
+  { name: 'Madeta', ico: '63275635' },
 ];
 
 export function getRandomSuggestions(count = 3) {
