@@ -13,7 +13,11 @@ export default function Home() {
   const [company, setCompany] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
-  const [suggestions] = useState(() => getRandomSuggestions(3));
+  const [suggestions, setSuggestions] = useState([]);
+
+  useEffect(() => {
+    setSuggestions(getRandomSuggestions(3));
+  }, []);
   const searchRequestId = useRef(0);
 
   const fetchHistory = async () => {
