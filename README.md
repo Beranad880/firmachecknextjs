@@ -232,3 +232,19 @@ Ukázka promptů, které byly použity při vývoji tohoto projektu s nástroji 
 
 **Dokumentace**
 > *„Napiš profesionální README.md pro tento projekt. Zahrň přehled funkcí, tabulku technologií, diagram architektury s logikou cache, návod na lokální spuštění a dokumentaci všech API endpointů."*
+
+**Diagnostika zdraví databáze (Health Check)**
+> *„Vytvoř API endpoint /api/dbcheck pro rychlou diagnostiku, který změří latenci dotazu k Turso DB, spočítá počet cachovaných subjektů a zkontroluje integritu SQL schématu.“*
+
+**Offsetové stránkování historie**
+> *„Uprav historii vyhledávání na stránkovanou s offsetovým dočítáním z databáze a přidej tlačítko 'Načíst další subjekty' na frontendu se zachováním plné zpětné kompatibility API.“*
+
+**Klientské reaktivní vyhledávání**
+> *„Přidej do panelu historie vyhledávací pole pro okamžité filtrování dříve vyhledaných subjektů podle názvu nebo IČO přímo na klientovi bez dalších síťových dotazů.“*
+
+**Kopírování do schránky s vizuální odezvou**
+> *„Implementuj u detailu firmy tlačítka pro rychlé kopírování IČO a Adresy do schránky s plynulou animací zeleného statusového odznaku 'Zkopírováno!'.“*
+
+**Externí GPS a mapová navigace**
+> *„Doplň pod interaktivní mapové okno rychlé odkazy pro spuštění navigace v plnohodnotné aplikaci Google Mapy a lokální službě Mapy.cz.“*
+
