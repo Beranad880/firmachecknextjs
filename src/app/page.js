@@ -246,16 +246,8 @@ export default function Home() {
               <h1 className="text-3xl font-extrabold tracking-tight text-white">FirmaCheck</h1>
             </div>
             <p className="text-sm text-zinc-300 mt-2 max-w-2xl">
-              Okamžité ověření českých firem přes státní registr ARES s chytrým mezipaměťovým úložištěm Turso DB.
+              Okamžité ověření českých firem přes státní registr ARES.
             </p>
-          </div>
-
-          <div className="mt-4 sm:mt-0 flex items-center justify-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-            <span className="text-xs font-mono text-zinc-300 tracking-wider">ARES API CONNECTED</span>
           </div>
         </header>
 
