@@ -20,13 +20,7 @@ export default function Home() {
   const limit = 6;
 
   useEffect(() => {
-    setSuggestions([
-      { name: 'Madeta', ico: '63549391' },
-      { name: 'Decathlon', ico: '26590993' },
-      { name: 'Kentico', ico: '27647302' },
-      { name: 'Alza.cz', ico: '27082440' },
-      { name: 'Škoda Auto', ico: '00177041' }
-    ]);
+    setSuggestions(getRandomSuggestions(4));
   }, []);
   const searchRequestId = useRef(0);
 
@@ -115,14 +109,16 @@ export default function Home() {
         setError(data.error || 'Něco se nepovedlo při vyhledávání subjekta.');
       } else {
         setCompany(data);
-        // Prepend to local state instantly
-        setHistory(prev => {
-          const filtered = prev.filter(item => item.ico !== data.ico);
-          return [
-            { ico: data.ico, name: data.name, address: data.address, created_at: data.created_at },
-            ...filtered,
-          ];
-        });
+        // Only prepend to local state instantly if it is a fresh ARES result (which will be at the top of the DB)
+        if (data.source === 'ares') {
+          setHistory(prev => {
+            const filtered = prev.filter(item => item.ico !== data.ico);
+            return [
+              { ico: data.ico, name: data.name, address: data.address, created_at: data.created_at },
+              ...filtered,
+            ];
+          });
+        }
         setPage(1);
         // Async refresh to sync correctly with DB total count
         fetchHistory(true);
